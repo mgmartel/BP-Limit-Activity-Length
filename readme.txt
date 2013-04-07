@@ -4,7 +4,7 @@ Donate link: http://trenvo.com/
 Tags: buddypress, activity, twitter, length
 Requires at least: WP3.5, BP1.6
 Tested up to:  WP3.5.1, BP1.6.3
-Stable tag: 0.3
+Stable tag: 0.3.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,6 +32,9 @@ None yet.
 1. The setting
 
 == Changelog ==
+
+=0.3.1=
+* Updated .pot file
 
 =0.3=
 * Initial release to WP Plugin Repository

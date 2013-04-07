@@ -100,8 +100,8 @@ if (!class_exists('BP_LimitActivityLength')) :
             ?>
                 <input id="bp-limit-activity-length-limit" size=4 name="bp-limit-activity-length[limit]" type="text" value="<?php echo $this->limit ?>" />
                 <select name="bp-limit-activity-length[type]">
-                    <option value='char' <?php selected('char',$this->type) ?>>Characters</option>
-                    <option value='word' <?php selected('word',$this->type) ?>>Words</option>
+                    <option value='char' <?php selected('char',$this->type) ?>><?php _e("Characters",'bp-lal') ?></option>
+                    <option value='word' <?php selected('word',$this->type) ?>><?php _e("Words",'bp-lal') ?></option>
                 </select>
                 <label for="bp-limit-activity-length"><?php _e( 'Allowed length for activity updates. Only applies to new updates.', 'bp-lal' ); ?></label></p>
             <?php
