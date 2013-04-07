@@ -3,7 +3,7 @@
   Plugin Name: BP Limit Activity Length
   Plugin URI: http://trenvo.com
   Description: Limit the maximum length of activities like Twitter
-  Version: 0.1
+  Version: 0.2
   Author: Mike Martel
   Author URI: http://trenvo.com
  */
@@ -17,7 +17,7 @@ if (!defined('ABSPATH'))
  *
  * @since 0.1
  */
-define('BP_LAL_VERSION', '0.1');
+define('BP_LAL_VERSION', '0.2');
 
 /**
  * PATHs and URLs
@@ -33,6 +33,7 @@ if (!class_exists('BP_LimitActivityLength')) :
     class BP_LimitActivityLength    {
 
         private $limit;
+        private $type;
 
         /**
          * Creates an instance of the BP_LimitActivityLength class
@@ -58,10 +59,16 @@ if (!class_exists('BP_LimitActivityLength')) :
          * @since 0.1
          */
         public function __construct() {
-            $this->limit = bp_get_option('bp-activity-length-limit', 140);
+            $options = bp_get_option('bp-limit-activity-length', array(
+                'limit' => 140,
+                'type'  => 'char'
+            ));
+            $this->limit = $options['limit'];
+            $this->type  = $options['type'];
 
             add_action( 'init', array ( &$this, '_maybe_load_scripts' ) );
-            add_filter( "bp_get_activity_content_body", array ( &$this, 'limit_activity_body_length' ), 10, 1 );
+            //add_filter( "bp_get_activity_content_body", array ( &$this, 'limit_activity_body_length' ), 10, 1 );
+            add_filter( "bp_activity_content_before_save", array ( &$this, 'verify_activity_length' ), 10, 1 );
 
             // Admin
             add_action( 'bp_register_admin_settings', array ( &$this, 'register_settings' ) );
@@ -85,19 +92,28 @@ if (!class_exists('BP_LimitActivityLength')) :
         }
 
         public function register_settings() {
-            add_settings_field( 'bp-activity-length-limit', __( 'Activity Length', 'bp-lal' ), array ( &$this, 'display_limit_setting'), 'buddypress', 'bp_activity' );
-			register_setting( 'buddypress', 'bp-activity-length-limit', array ( &$this, 'sanitize_limit' ) );
+            add_settings_field( 'bp-limit-activity-length', __( 'Activity Length', 'bp-lal' ), array ( &$this, 'display_limit_setting'), 'buddypress', 'bp_activity' );
+			register_setting( 'buddypress', 'bp-limit-activity-length', array ( &$this, 'sanitize_limit' ) );
         }
 
         public function display_limit_setting() {
             ?>
-                <input id="bp-activity-length-limit" name="bp-activity-length-limit" type="text" value="<?php echo $this->limit ?>" />
-                <label for="bp-activity-length-limit"><?php _e( 'Allowed length for activity updates. Limit to get force shorter updates.', 'bp-lal' ); ?></label>
+                <input id="bp-limit-activity-length-limit" size=4 name="bp-limit-activity-length[limit]" type="text" value="<?php echo $this->limit ?>" />
+                <select name="bp-limit-activity-length[type]">
+                    <option value='char' <?php selected('char',$this->type) ?>>Characters</option>
+                    <option value='word' <?php selected('word',$this->type) ?>>Words</option>
+                </select>
+                <label for="bp-limit-activity-length"><?php _e( 'Allowed length for activity updates. Limit to get force shorter updates.', 'bp-lal' ); ?></label></p>
             <?php
         }
 
         public function sanitize_limit( $setting ) {
-            if ( !is_numeric( $setting ) ) $setting = $this->limit;
+            if ( ! is_array ( $setting ) ) $setting = array();
+            if ( ! isset ( $setting['limit'] ) || ! is_numeric ( $setting['limit'] ) )
+                $setting['limit'] = $this->limit;
+            if ( ! isset ( $setting['type'] ) || ! in_array ( $setting['type'], array ( 'char', 'word' ) ) )
+                $setting['type'] = $this->type;
+
             return $setting;
         }
 
@@ -106,6 +122,7 @@ if (!class_exists('BP_LimitActivityLength')) :
             wp_enqueue_script( 'bplal', BP_LAL_INC_URL . 'bp-lal.js', array('jquery'), BP_LAL_VERSION, true );
             wp_localize_script('bplal', 'BPLal', array(
                 'limit'     => $this->limit,
+                'type'      => $this->type
             ));
         }
 
@@ -116,6 +133,25 @@ if (!class_exists('BP_LimitActivityLength')) :
             ?>
             <style>div#whats-new-limit{float:right;margin:12px 10px 0 0;line-height:28px;}</style>
             <?php
+        }
+
+        public function verify_activity_length ( $content ) {
+            if ( 'word' == $this->type ) {
+                $words = str_word_count( $content, 2 );
+                if ( count ( $words ) > $this->limit ) {
+                    $word_positions = array_keys ( $words );
+                    $last_word_position = $word_positions[$this->limit];
+                    $content = substr($content,0,$last_word_position);
+                }
+            } else {
+                $chars = strlen ( $content );
+                $diff = $this->limit - $chars;
+
+                if ( $diff < 0 ) {
+                    $content = substr( $content, 0, $this->limit );
+                }
+            }
+            return $content;
         }
 
         /**

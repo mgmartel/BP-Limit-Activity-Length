@@ -5,25 +5,58 @@
          this.onkeydown = this.onkeyup = null;
       });
   };
-  $.fn.textLimit = function( limit , callback ) {
+  $.fn.textLimit = function( limit , type , callback ) {
+      if ( ! callback ) {
+        callback = type;
+      }
+
       if ( typeof callback !== 'function' ) var callback = function() {};
       return this.each(function() {
         this.limit = limit;
         this.callback = callback;
+        this.count = 0;
         this.onkeydown = this.onkeyup = this.onfocus = function() {
-          this.value = this.value.substr(0,this.limit);
-          this.reached = this.limit - this.value.length;
-          this.reached = ( this.reached == 0 ) ? true : false;
-          return this.callback( this.value.length, this.limit, this.reached );
+
+          if ( type && type === 'word' ) {
+
+            this.reached = false;
+            var re = /\w+/g,
+                match,
+                wordCount = 0;
+            while (( match = re.exec(this.value)) !== null ) {
+              if ( wordCount >= this.limit ) {
+                var lastChar = match.index;
+                this.reached = true;
+                break;
+              }
+              wordCount++;
+
+            }
+            this.count = wordCount;
+
+            if ( this.value[lastChar] && this.value[lastChar].match(/[^\w\s\n\t]/) ) lastChar++;
+            this.value = this.value.substr(0,lastChar);
+
+            return this.callback( this.count, this.limit, this.reached );
+          } else {
+            this.onkeydown = this.onkeyup = this.onfocus = function() {
+              this.value = this.value.substr(0,this.limit);
+              this.reached = this.limit - this.value.length;
+              this.reached = ( this.reached == 0 ) ? true : false;
+              return this.callback( this.value.length, this.limit, this.reached );
+            }
+          }
+          this.pointer = this.value.length;
         }
       });
   };
 
   $(document).ready(function() {
-    var activity_limit = BPLal.limit;
+    var activity_limit = BPLal.limit,
+        type           = BPLal.type;
 
     $("#whats-new-submit").after("<div id='whats-new-limit'></div>");
-    $('textarea#whats-new').textLimit(activity_limit,function( length, limit ){
+    $('textarea#whats-new').textLimit(activity_limit,type,function( length, limit ){
       $("#whats-new-limit").text( limit - length );
     }).trigger("keyup");
   });
