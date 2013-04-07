@@ -3,7 +3,7 @@
   Plugin Name: BP Limit Activity Length
   Plugin URI: http://trenvo.com
   Description: Limit the maximum length of activities like Twitter
-  Version: 0.3
+  Version: 0.3.2
   Author: Mike Martel
   Author URI: http://trenvo.com
  */
@@ -17,7 +17,7 @@ if (!defined('ABSPATH'))
  *
  * @since 0.1
  */
-define('BP_LAL_VERSION', '0.3');
+define('BP_LAL_VERSION', '0.3.2');
 
 /**
  * PATHs and URLs
