@@ -55,10 +55,27 @@
     var activity_limit = BPLal.limit,
         type           = BPLal.type;
 
-    $("#whats-new-submit").after("<div id='whats-new-limit'></div>");
+    $("#whats-new-submit").after("<div id='whats-new-limit' class='activity-limit'></div>");
     $('textarea#whats-new').textLimit(activity_limit,type,function( length, limit ){
       $("#whats-new-limit").text( limit - length );
     }).trigger("keyup");
+
+    $(".ac-form input[type=submit]").before("<div class='activity-limit'>" + activity_limit + "</div>");
+    $(document).on("keydown", ".ac-form", function() {
+      var $form = $(this);
+      if ( $form.data('hasTextlimit' ) ) return;
+      
+      // For ajaxed in comment forms
+      if ( ! $form.find(".activity-limit").get(0) )
+        $form.find("input[type=submit]").before("<div class='activity-limit'>" + activity_limit + "</div>");
+
+      $form.find("textarea").textLimit(activity_limit,type,function( length, limit ) {
+        $form.find(".activity-limit").text( limit - length );
+      }).trigger("keyup");
+
+      $form.data('hasTextlimit', true);
+    });
+
   });
 
 })(jQuery);
