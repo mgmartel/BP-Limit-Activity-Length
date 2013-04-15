@@ -3,7 +3,7 @@
   Plugin Name: BP Limit Activity Length
   Plugin URI: http://trenvo.com
   Description: Limit the maximum length of activities like Twitter
-  Version: 0.3.3
+  Version: 0.3.4
   Author: Mike Martel
   Author URI: http://trenvo.com
  */
@@ -17,7 +17,7 @@ if (!defined('ABSPATH'))
  *
  * @since 0.1
  */
-define('BP_LAL_VERSION', '0.3.3');
+define('BP_LAL_VERSION', '0.3.4');
 
 /**
  * PATHs and URLs
@@ -139,19 +139,21 @@ if (!class_exists('BP_LimitActivityLength')) :
          * @since 0.2
         **/
         public function verify_activity_length ( $content ) {
+            $stripped_content = strip_tags( $content );
+
             if ( 'word' == $this->type ) {
-                $words = str_word_count( $content, 2 );
+                $words = str_word_count( $stripped_content, 2 );
                 if ( count ( $words ) > $this->limit ) {
                     $word_positions = array_keys ( $words );
                     $last_word_position = $word_positions[$this->limit];
-                    $content = substr($content,0,$last_word_position);
+                    $content = substr($stripped_content,0,$last_word_position);
                 }
             } else {
-                $chars = strlen ( $content );
+                $chars = strlen ( $stripped_content );
                 $diff = $this->limit - $chars;
 
                 if ( $diff < 0 ) {
-                    $content = substr( $content, 0, $this->limit );
+                    $content = substr( $stripped_content, 0, $this->limit );
                 }
             }
             return $content;
