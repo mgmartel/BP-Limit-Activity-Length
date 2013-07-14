@@ -4,7 +4,7 @@ Donate link: http://trenvo.com/
 Tags: buddypress, activity, twitter, length
 Requires at least: WP3.5, BP1.6
 Tested up to:  WP3.5.1, BP1.6.3
-Stable tag: 0.3.4
+Stable tag: 0.3.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,23 +33,34 @@ None yet.
 
 == Changelog ==
 
+=0.3.5=
+
+* Made the truncation count characters not bytes, so multibyte characters are counted as 1 (thanks to Jonas Knupp!)
+
 =0.3.4=
+
 * Compatibility with BP Reshare
 
 =0.3.3=
+
 * Added limit to activity comments
 
 =0.3.2=
+
 * Added Dutch and Italian translations (thanks [Luca](https://github.com/luccame)!)
 
 =0.3.1=
+
 * Updated .pot file
 
 =0.3=
+
 * Initial release to WP Plugin Repository
 
 =0.2=
+
 * Added word limit as alternative
 
 =0.1=
+
 * Initial release to GitHub
