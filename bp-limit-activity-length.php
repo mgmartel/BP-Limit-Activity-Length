@@ -3,7 +3,7 @@
   Plugin Name: BP Limit Activity Length
   Plugin URI: http://trenvo.com
   Description: Limit the maximum length of activities like Twitter
-  Version: 0.3.5
+  Version: 0.4
   Author: Mike Martel
   Author URI: http://trenvo.com
  */
@@ -17,7 +17,7 @@ if (!defined('ABSPATH'))
  *
  * @since 0.1
  */
-define('BP_LAL_VERSION', '0.3.5');
+define('BP_LAL_VERSION', '0.4');
 
 /**
  * PATHs and URLs
@@ -67,8 +67,7 @@ if (!class_exists('BP_LimitActivityLength')) :
             $this->type  = $options['type'];
 
             add_action( 'init', array ( &$this, '_maybe_load_scripts' ) );
-            //add_filter( "bp_get_activity_content_body", array ( &$this, 'limit_activity_body_length' ), 10, 1 );
-            add_filter( "bp_activity_content_before_save", array ( &$this, 'verify_activity_length' ), 10, 1 );
+            add_filter( "bp_activity_type_before_save", array ( &$this, '_maybe_verify_activity_length' ) );
 
             // Admin
             add_action( 'bp_register_admin_settings', array ( &$this, 'register_settings' ) );
@@ -136,9 +135,29 @@ if (!class_exists('BP_LimitActivityLength')) :
         }
 
         /**
+         * Make sure to only enforce activity length for activity updates and comments
+         *
+         * @param string $type
+         * @return string $type
+         * @since 0.4
+         */
+        public function _maybe_verify_activity_length( $type ) {
+            $whitelist = array( 'activity_update', 'activity_comment' );
+            $whitelist = apply_filters( 'bp_lal_activity_types', $whitelist );
+
+            if ( in_array( $type, $whitelist ) ) {
+                add_filter( "bp_activity_content_before_save", array ( &$this, 'verify_activity_length' ) );
+            }
+
+            return $type;
+        }
+
+        /**
          * @since 0.2
         **/
         public function verify_activity_length ( $content ) {
+            remove_filter( "bp_activity_content_before_save", array ( &$this, 'verify_activity_length' ) );
+
             $stripped_content = strip_tags( $content );
 
             if ( 'word' == $this->type ) {
